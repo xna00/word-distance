@@ -26,13 +26,13 @@
       function compute(form) {
         const data = Object.fromEntries(new FormData(form));
         result.innerText = vocabulary
-          .filter((v) => minDistance(data.word, v) <= data.distance)
+          .filter((v) => v !== data.word && minDistance(data.word, v) <= data.distance)
           .join("\n");
       }
 
       fetch("./vocabulary.txt")
         .then((res) => res.text())
-        .then((res) => (vocabulary = res.split("\n")))
+        .then((res) => (vocabulary = Array.from(new Set(res.split("\n")))))
         .then(() => compute(form));
 
       function minDistance(word1, word2) {
