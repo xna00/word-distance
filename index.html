@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>word distance</title>
+    <style>
+      label {
+        display: block;
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="form">
+      <label>单词: <input type="text" name="word" value="pad" /> </label>
+      <label>距离: <input type="number" name="distance" value="1" /> </label>
+      <input type="submit" value="查询" />
+    </form>
+    <div id="result"></div>
+
+    <script>
+      let vocabulary = [];
+
+      function compute(form) {
+        const data = Object.fromEntries(new FormData(form));
+        result.innerText = vocabulary
+          .filter((v) => minDistance(data.word, v) <= data.distance)
+          .join("\n");
+      }
+
+      fetch("./vocabulary.txt")
+        .then((res) => res.text())
+        .then((res) => (vocabulary = res.split("\n")))
+        .then(() => compute(form));
+
+      function minDistance(word1, word2) {
+        if (word1.length < word2.length) return minDistance(word2, word1);
+        const dp = new Array(word2.length + 1).fill(0).map((_, i) => i);
+        for (let i = 1; i <= word1.length; i++) {
+          let p1 = dp[0];
+          dp[0] = i;
+          for (let j = 1; j <= word2.length; j++) {
+            let tmp = dp[j];
+            dp[j] =
+              Math.min(
+                dp[j],
+                dp[j - 1],
+                p1 + (word1[i - 1] === word2[j - 1] ? -1 : 0)
+              ) + 1;
+            p1 = tmp;
+          }
+        }
+
+        return dp[word2.length];
+      }
+
+      const form = document.getElementById("form");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        compute(e.target);
+      });
+    </script>
+  </body>
+</html>
